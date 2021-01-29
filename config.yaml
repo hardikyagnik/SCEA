@@ -1,0 +1,9 @@
+appName: SCEA
+Path:
+  Output: "Output"
+Algorithm:
+  SPECIES_SIZE: 200
+  GEN_SIZE: 50
+  CX_PB: 0.9
+  MU_PB: 0.15
+  HOF_SIZE: 10
