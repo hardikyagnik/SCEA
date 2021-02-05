@@ -1,14 +1,24 @@
-from .platform import *
-from .algorithm import *
+from SCEA.platform import *
+from SCEA.algorithm import *
+from SCEA.utils import load_data_csv, calculate_dependency
 
+import pandas as pd
+
+
+def __load_data(dataPath: str) -> dict:
+    projects: list[pd.DataFrame] = load_data_csv(dataPath, 'project')
+    similarity: pd.DataFrame = load_data_csv(dataPath, 'similarity')[0]
+    failure_ratio: pd.DataFrame = load_data_csv(dataPath, 'failure')[0]
+
+    data = {
+        'projects': projects,
+        'similarity': similarity,
+        'failure_ratio': failure_ratio,
+    }
+    return data
+    
 def execute_scea(args):
-    print(args)
+    # Load Data
+    data: dict = __load_data(args.dataPath)
 
-"""
-TODO: 
-    - Write method names execute_scea. It gets argument object custructed eather
-    through cmd line args or through or from command file
-    - gather data
-    - initialise platform
-    - execute algorithm
-"""
+    platform: Platform = Platform(data)

@@ -1,6 +1,7 @@
 appName: SCEA
 Path:
   Output: "Output"
+  Data: "Data"
 Algorithm:
   SPECIES_SIZE: 200
   GEN_SIZE: 50

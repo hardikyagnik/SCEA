@@ -1,2 +1,3 @@
 from SCEA.scea import main
-main()
+
+__all__ = ['main']

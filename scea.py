@@ -1,8 +1,8 @@
 import argparse
 import os
 
-from .utils import data_utils
-from .run import execute_scea
+from SCEA.utils import data_utils
+from SCEA.run import execute_scea
 
 def get_parser(config: dict):
     parser = argparse.ArgumentParser(
@@ -57,6 +57,23 @@ def get_parser(config: dict):
         help=f"Number of Elite to preserve per generation. default {config['Algorithm']['HOF_SIZE']}"
     )
     
+    parser.add_argument(
+        '-data',
+        action='store',
+        type=str,
+        default=os.path.join(os.path.dirname(__file__), config['Path']['Data']),
+        dest='dataPath',
+        help=f"Path to the directory containing Data"
+    )
+
+    parser.add_argument(
+        '-out',
+        action='store',
+        type=str,
+        default=os.path.join(os.path.dirname(__file__), config['Path']['Output']),
+        dest='outputPath',
+        help=f"Path to the Output directory for logs, results and checkpoints"
+    )
     return parser
 
 def main():
@@ -64,8 +81,5 @@ def main():
     config = data_utils.get_config_object(path=filepath)
     parser = get_parser(config=config)
     args = parser.parse_args()
-    
-    execute_scea(args)
 
-if __name__ == '__main__':
-    main()
+    execute_scea(args)

@@ -1,9 +1,11 @@
 
+
 class Project(object):
 
     def __init__(self, data: dict) -> None:
-        self.dependency_dict: dict = data['dependency']
-        self.duration: list = data['duration']
+        self.task_dependency: dict = data['task_dependency']
+        self.duration: dict = data['duration']
+        self.reg_duration: dict = data['reg_duration']
         self.tasks: list = data['tasks']
         self.IND_SIZE = len(tasks)
     
