@@ -2,6 +2,7 @@ import yaml
 import pandas as pd
 import os 
 import glob
+import datetime
 from collections import defaultdict
 
 
@@ -30,9 +31,26 @@ def load_data_csv(path: str, obj_type: str):
     objects: list[pd.DataFrame] = []
     for f in glob.glob(f"*{obj_type}*.csv"):
         objects.append(pd.read_csv(os.path.join(path, f)))
-
+        if obj_type == 'project':
+            cols = ['registrationStartDate', 'submissionEndDate', 'registrationEndDate']
+            objects[-1] = __change_to_datetime(objects[-1], cols)
+        elif obj_type == 'failure':
+            cols = ['registrationStartDate']
+            objects[-1] = __change_to_datetime(objects[-1], cols)
     os.chdir(old_wd)
     return objects
+
+def __change_to_datetime(df: pd.DataFrame, columns: list) -> pd.DataFrame:
+    for col in columns:
+        df[col] = pd.to_datetime(df[col], infer_datetime_format=True)
+    return df
+
+def get_fr_inrange(frdf: pd.DataFrame, sDate: pd.Timestamp, eDate: pd.Timestamp):
+    mask = (frdf['registrationStartDate'] >= sDate) & (frdf['registrationStartDate'] <= eDate)
+    result_fr = frdf[mask]
+    result_fr.sort_values(by='registrationStartDate', inplace=True)
+    result_fr.reset_index(drop=True, inplace=True)
+    return result_fr['failureRatio'].tolist()
 
 def calculate_duration(df: pd.DataFrame, filter: str) -> dict:
     """
@@ -46,10 +64,10 @@ def calculate_duration(df: pd.DataFrame, filter: str) -> dict:
     duration: dict = {}
     for cid, start, end in zip(df['challengeId'], df['registrationStartDate'], df[filter_map[filter]]):
         delta = end - start
-        if delta[i].components[1] >= 8:
-            duration[cid] = delta[i].components[0]+1
+        if delta.components[1] >= 8:
+            duration[cid] = delta.components[0]+1
         else:
-            duration[cid] = delta[i].components[0]+1
+            duration[cid] = delta.components[0]+1
     return duration
 
 def calculate_dependency(df: pd.DataFrame) -> defaultdict(set):

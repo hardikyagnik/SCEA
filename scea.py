@@ -4,6 +4,7 @@ import os
 from SCEA.utils import data_utils
 from SCEA.run import execute_scea
 
+
 def get_parser(config: dict):
     parser = argparse.ArgumentParser(
         prog='SCEA',

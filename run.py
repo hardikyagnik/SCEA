@@ -1,6 +1,6 @@
 from SCEA.platform import *
 from SCEA.algorithm import *
-from SCEA.utils import load_data_csv, calculate_dependency
+from SCEA.utils import load_data_csv, calculate_dependency, get_toolkit
 
 import pandas as pd
 
@@ -21,4 +21,8 @@ def execute_scea(args):
     # Load Data
     data: dict = __load_data(args.dataPath)
 
+    # Create Platform object
     platform: Platform = Platform(data)
+
+    # Generate DEAP Toolbox object using Platform object
+    toolbox = get_toolkit(platform)
