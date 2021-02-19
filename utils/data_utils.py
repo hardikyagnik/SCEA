@@ -30,13 +30,19 @@ def load_data_csv(path: str, obj_type: str):
 
     objects: list[pd.DataFrame] = []
     for f in glob.glob(f"*{obj_type}*.csv"):
-        objects.append(pd.read_csv(os.path.join(path, f)))
         if obj_type == 'project':
+            objects.append(pd.read_csv(os.path.join(path, f)))
             cols = ['registrationStartDate', 'submissionEndDate', 'registrationEndDate']
             objects[-1] = __change_to_datetime(objects[-1], cols)
         elif obj_type == 'failure':
+            objects.append(pd.read_csv(os.path.join(path, f)))
             cols = ['registrationStartDate']
             objects[-1] = __change_to_datetime(objects[-1], cols)
+        else:
+            df = pd.read_csv(os.path.join(path, f), index_col='pid/pid')
+            df.columns = df.columns.astype(int)
+            objects.append(df)
+            
     os.chdir(old_wd)
     return objects
 
@@ -70,7 +76,7 @@ def calculate_duration(df: pd.DataFrame, filter: str) -> dict:
             duration[cid] = delta.components[0]+1
     return duration
 
-def calculate_dependency(df: pd.DataFrame) -> defaultdict(set):
+def calculate_forward_dependency(df: pd.DataFrame) -> defaultdict(set):
     """
     Example return object
     task_dependency = {
@@ -114,7 +120,7 @@ def calculate_dependency(df: pd.DataFrame) -> defaultdict(set):
     return task_dependency
 
 
-def old_calculate_dependency(df: pd.DataFrame) -> dict:
+def calculate_backward_dependency(df: pd.DataFrame) -> dict:
     """
     Example return object:
     taskDependency = {
@@ -133,7 +139,7 @@ def old_calculate_dependency(df: pd.DataFrame) -> dict:
     the tasks in values are not completed. Key is dependent on value.
     """
     task_dependency = dict()
-    for parents, cid in zip(df['Sequential Tasks'], df['challengeId']):
+    for parents, cid in zip(df['Sequential Tasks'].astype('str'), df['challengeId']):
         parent_tids = None if parents=='nan' else parents.split(',')
         if parent_tids:
             parent_cids = df[df['Task Id'].isin(parent_tids)]['challengeId'].tolist()
