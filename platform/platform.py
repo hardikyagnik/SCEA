@@ -5,6 +5,7 @@ from SCEA.utils import (
     )
 
 import pandas as pd
+import datetime
 
 
 class Platform(object):
@@ -16,7 +17,7 @@ class Platform(object):
         self.s_date = None
         self.e_date = None
         self.max_days = None
-        
+
         # Fill Failure ratio list along with s_date and e_date
         self.__fill_failure_ratio(data['failure_ratio'], data['projects'])
 
@@ -34,8 +35,8 @@ class Platform(object):
             duration: dict = calculate_duration(pdf, 'total')
             reg_duration: dict = calculate_duration(pdf, 'registration')
 
-            delta = self.e_date - self.s_date
-            self.max_days: int = delta.components[0] + round(delta.components[1]/10 - 0.2)
+            # delta = self.e_date - self.s_date
+            # self.max_days: int = delta.components[0] + round(delta.components[1]/10 - 0.2)
 
             data = {
                 'task_forward_dependency': task_forward_dependency,
@@ -62,5 +63,12 @@ class Platform(object):
         as maxmimum submissionEndDate of all those projects.
         """
         self.s_date = min([min(pdf['registrationStartDate']) for pdf in projects])
-        self.e_date = max([max(pdf['submissionEndDate']) for pdf in projects])
-        self.failure_ratio = get_fr_inrange(frdf, self.s_date, self.e_date)
+        self.e_date = max([max(pdf['registrationStartDate']) for pdf in projects])
+        delta = self.e_date - self.s_date
+        self.max_days: int = delta.components[0] + round(delta.components[1]/10 - 0.2)
+
+        # self.e_date = max([max(pdf['submissionEndDate']) for pdf in projects])
+        self.failure_ratio = get_fr_inrange(
+            frdf, self.s_date,
+            self.s_date + datetime.timedelta(days=self.max_days)
+            )

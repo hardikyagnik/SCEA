@@ -24,7 +24,7 @@ class Project(object):
             edate = schedule[idx] + self.duration[tid]
             for cid in children:
                 if schedule[self.task_idx_map[cid]] <= edate:
-                    print(f'Failed for tid: {tid} and cid: {cid}')
+                    # print(f'Failed for tid: {tid} and cid: {cid}')
                     return False
         return True
 

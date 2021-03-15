@@ -1,6 +1,6 @@
 import yaml
 import pandas as pd
-import os 
+import os
 import glob
 import datetime
 from collections import defaultdict

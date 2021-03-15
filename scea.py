@@ -50,12 +50,12 @@ def get_parser(config: dict):
     )
 
     parser.add_argument(
-        '-hpop',
+        '-rpop',
         action='store',
         type=float,
-        default=config['Algorithm']['HOF_SIZE'],
-        dest='HOF_SIZE',
-        help=f"Number of Elite to preserve per generation. default {config['Algorithm']['HOF_SIZE']}"
+        default=config['Algorithm']['REP_SIZE'],
+        dest='REP_SIZE',
+        help=f"Number of Representatives to preserve per generation. default {config['Algorithm']['REP_SIZE']}"
     )
     
     parser.add_argument(
