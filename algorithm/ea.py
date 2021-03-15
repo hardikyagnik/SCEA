@@ -6,18 +6,32 @@ from SCEA.platform import Project
 
 
 def cea(population, platform, args, toolbox):
-    # Enable Multi processing
+    # Projects obj array
+    projects = platform.projects
 
     # Representatives
     rep_pros = [
     {
-        'representatives': species.representatives,
+        'representatives': [],
         'project': project
-        } for species, project in zip(population, platform.projects)
+        } for species, project in zip(population, projects)
     ]
+    
+    # Initial population evaluation
+    for idx, species in enumerate(population):
+        _rep_pros = rep_pros[0:idx] + rep_pros[idx+1:]
+        offsprings = {
+            'children': species, # Initially all individuals have None fitness 
+            'project': projects[idx]
+            }
 
-    # Projects obj array
-    projects = platform.projects
+        toolbox.evaluate(offsprings, _rep_pros)
+        # Perform Non-Dominated sorting then Crowd-Distance sorting 
+        # and update representatives and population.
+        species = toolbox.select(species, k=args.SPECIES_SIZE)
+
+        # Select top REP_SIZE from it as new representatives
+        rep_pros[idx]['representatives'] = toolbox.select(species, k=args.REP_SIZE)
 
     for gen in range(args.GEN_SIZE):
         for idx, species in enumerate(population):
@@ -44,13 +58,10 @@ def cea(population, platform, args, toolbox):
 
             # Select best performing individuals for next generation
             # Select top SPECIES_SIZE from it as new species
-            # Select top REP_SIZE from it as new representatives
             species = toolbox.select(species + offspring_ind, k=args.SPECIES_SIZE)
-            species.representatives = toolbox.select(species + offspring_ind, k=args.REP_SIZE)
-            
-            # Update rep_pros list
-            rep_pros[idx]['representatives'] = species.representatives
-    print(0)
+
+            # Select top REP_SIZE from it as new representatives
+            rep_pros[idx]['representatives'] = toolbox.select(species + offspring_ind, k=args.REP_SIZE)
     return population
 
 def varAndWithHardConstraint(species, project: Project, toolbox, cxpb, mutpb):

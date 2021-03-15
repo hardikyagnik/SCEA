@@ -104,7 +104,6 @@ def evaluate(offsprings: dict, rep_pro: List[dict], platform:Platform):
     end = time.perf_counter()
     print(f"Completed evaluating {len(combinations)} combinations in {round(end-start,4)} seconds.")
 
-
 def create_schedule(project: Project, toolbox: base.Toolbox):
     nVars = project.IND_SIZE
     schedule = [None]*nVars
@@ -163,13 +162,9 @@ def get_toolbox(platform: Platform, args) -> base.Toolbox:
     # Define individual class
     creator.create('Schedule', list, fitness=creator.MultiFitness)
 
-    # Class for storing representatives per species.
-    # A list best schedules per generation
-    creator.create("Representatives", list)
-
     # Species Class for storing list of Schedules per Project per Generation
     # Stores Representatives which gets updated everytime specis gets updated
-    creator.create('Species', list, representatives=creator.Representatives)
+    creator.create('Species', list)
 
     # Class for storing list of species
     creator.create('Population', list)
@@ -191,6 +186,5 @@ def get_toolbox(platform: Platform, args) -> base.Toolbox:
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("mate", tools.cxTwoPoint)
     toolbox.register("mutate", tools.mutShuffleIndexes)
-
 
     return toolbox
