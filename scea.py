@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from SCEA.utils import data_utils
+from SCEA.utils import data_utils, get_toolbox
 from SCEA.run import execute_scea
 
 
@@ -77,10 +77,13 @@ def get_parser(config: dict):
     )
     return parser
 
-def main():
-    filepath = os.path.join(os.path.dirname(__file__), 'config.yaml')
-    config = data_utils.get_config_object(path=filepath)
-    parser = get_parser(config=config)
-    args = parser.parse_args()
 
-    execute_scea(args)
+filepath = os.path.join(os.path.dirname(__file__), 'config.yaml')
+config = data_utils.get_config_object(path=filepath)
+parser = get_parser(config=config)
+args = parser.parse_args()
+
+toolbox = get_toolbox(args=args)
+
+def main():
+    execute_scea(args=args, toolbox=toolbox)
