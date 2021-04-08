@@ -1,14 +1,30 @@
 from deap import tools
 from deap import algorithms
 import random
+import os, time
+import joblib, pickle
 
 from SCEA.platform import Project
 
 
 def cea(population, platform, args, toolbox, stats=None, verbose=__debug__):
+
+    # Make Output dir(s)
+    log_dir = os.path.join(args.outputPath, 'Log')
+    op_data_dir = os.path.join(args.outputPath, 'Data')
+    cp_dir = os.path.join(args.outputPath, 'Checkpoints')
+    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(op_data_dir, exist_ok=True)
+    os.makedirs(cp_dir, exist_ok=True)
+    log_eval_path = os.path.join(log_dir, 'log_eval.txt')
+
+    # Save Platform data
+    with open(os.path.join(op_data_dir, 'platform.pickle'), 'wb') as f:
+        pickle.dump(platform, f)
+
     # Projects obj array
     projects = platform.projects
-    
+
     # Initialise Logbook
     logbook = tools.Logbook()
     logbook.header = ["gen", "species", "nevals"] + (list(stats.keys()) if stats else [])
@@ -23,7 +39,7 @@ def cea(population, platform, args, toolbox, stats=None, verbose=__debug__):
         'project': project
         } for species, project in zip(population, projects)
     ]
-    
+
     # Initial population evaluation
     for idx, species in enumerate(population):
         _rep_pros = rep_pros[0:idx] + rep_pros[idx+1:]
@@ -42,12 +58,15 @@ def cea(population, platform, args, toolbox, stats=None, verbose=__debug__):
 
         # Maintain Elite individuals
         rep_pros[idx]['hof'].update(species) 
-        
+
         # Logging
         record = stats.compile(species) if stats else {}
         logbook.record(gen=0, species=idx+1, nevals=len(species), **record)
+        log_stream = logbook.stream
         if verbose:
-            print(logbook.stream)
+            print(log_stream)
+        with open(log_eval_path, 'a') as log_file:
+            log_file.write(f"{log_stream}\n")
 
     for gen in range(args.GEN_SIZE):
         for idx, species in enumerate(population):
@@ -85,12 +104,34 @@ def cea(population, platform, args, toolbox, stats=None, verbose=__debug__):
 
             # Select top REP_SIZE from it as new representatives
             rep_pros[idx]['representatives'] = toolbox.select(species + offspring_ind, k=args.REP_SIZE)
-            
+
+            # Set new species
+            population[idx] = species
+
             # Logging
             record = stats.compile(species) if stats else {}
             logbook.record(gen=gen+1, species=idx+1, nevals=nevals, **record)
+            log_stream = logbook.stream
             if verbose:
-                print(logbook.stream)
+                print(log_stream)
+            with open(log_eval_path, 'a') as log_file:
+                log_file.write(f"{log_stream}\n")
+
+        if gen % 5 == 0:
+            cp = dict(
+                generation = gen,
+                representatives = [rep['representatives'] for rep in rep_pros],
+                population = population
+            )
+            with open(os.path.join(cp_dir, f'checkpoint_{gen}.pickle'), 'wb') as f:
+                pickle.dump(cp, f)
+    cp = dict(
+        generation = gen,
+        representatives = [rep['representatives'] for rep in rep_pros],
+        population = population
+    )
+    with open(os.path.join(cp_dir, f'checkpoint_{gen}.pickle'), 'wb') as f:
+        pickle.dump(cp, f)
 
     return population
 

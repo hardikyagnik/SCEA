@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 
 from SCEA.utils import data_utils, get_toolbox
 from SCEA.run import execute_scea
@@ -71,7 +72,7 @@ def get_parser(config: dict):
         '-out',
         action='store',
         type=str,
-        default=os.path.join(os.path.dirname(__file__), config['Path']['Output']),
+        default=os.path.join(os.path.dirname(__file__), os.path.pardir, config['Path']['Output'], f"{int(time.time())}"),
         dest='outputPath',
         help=f"Path to the Output directory for logs, results and checkpoints"
     )

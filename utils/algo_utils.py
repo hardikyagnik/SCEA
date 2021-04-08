@@ -2,8 +2,6 @@ from typing import List, Tuple
 from deap import tools, creator, base
 import numpy as np
 import itertools as it
-import multiprocessing
-multiprocessing.set_start_method('spawn', True)
 import concurrent.futures
 from operator import mul
 import time, os
@@ -109,22 +107,12 @@ def evaluate(offsprings: dict, rep_pro: List[dict], platform:Platform):
     combinations = list(it.product(*indices))
     N = len(offspring_inds)*combi_per_ind
 
+    combis_list = [list(_) for _ in grouper(combinations,combi_per_ind)]
+    args_tups = zip(offspring_inds, combis_list, it.repeat(offspring_project), it.repeat(rep_pro), it.repeat(platform))
+
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        for idx in range(0, N, combi_per_ind):
-            schedule = offspring_inds[combinations[idx][0]]
-            combis = combinations[idx : idx+combi_per_ind]
-            # print(f"func:= evaluate; msg:= Evaluating {combinations[idx][0]} with fitness={schedule.fitness.values}")
-            ex = executor.submit(
-                concurrent_eval,
-                schedule=schedule,
-                combinations=combis,
-                project=offspring_project,
-                rep_pro=rep_pro,
-                platform=platform)
-            result = ex.result()
-            offspring_inds[combinations[idx][0]] = result
-            # print(f"func:= evaluate; msg:= Done Eval {combinations[idx][0]}; fitness={result.fitness.values}")
-    # executor.shutdown()
+        results = executor.map(concurrent_eval, *zip(*args_tups))
+        offspring_inds[:] = results
 
     end = time.perf_counter()
     # print(f"Completed evaluating {len(combinations)} combinations in {round(end-start,4)} seconds.")
@@ -213,3 +201,8 @@ def get_toolbox(args) -> base.Toolbox:
     toolbox.register("mutate", tools.mutShuffleIndexes)
 
     return toolbox
+
+def grouper(iterable, n, fillvalue=None):
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
+    args = [iter(iterable)] * n
+    return it.zip_longest(*args, fillvalue=fillvalue)

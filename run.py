@@ -51,7 +51,7 @@ def execute_scea(args, toolbox):
     stats.register("min", myMin)
 
     # Call CEA
-    population = cea(population, platform, args, toolbox, stats=stats)
+    population = cea(population, platform, args, toolbox, stats=stats, verbose=True)
 
 def round_decorator(func, k=2):
     @functools.wraps(func)

@@ -3,8 +3,8 @@ Path:
   Output: "Output"
   Data: "Data"
 Algorithm:
-  SPECIES_SIZE: 200
-  GEN_SIZE: 50
+  SPECIES_SIZE: 80
+  GEN_SIZE: 40
   CX_PB: 0.9
   MU_PB: 0.15
-  HOF_SIZE: 10
+  REP_SIZE: 16
